@@ -47,14 +47,14 @@
 直接插在usb槽即可
 
 # Raspberry pi environment set up
-1.下載 flask 套件</br>
+### 1.下載 flask 套件</br>
   建立網頁讓影像可以在上面串流和操控servo motor
   ```
   pip3 install flask
   ```
   [Flask詳細教學](https://projects.raspberrypi.org/en/projects/python-web-server-with-flask/3)
 
-2.下載麥克風所需套件</br>
+### 2.下載麥克風所需套件</br>
   * step1. 首先下載speech recognition套件</br>
   好像只能用pip3下載，pip會一直噴錯</br>
   ```
@@ -75,11 +75,11 @@
   ```
   若在python中執行`import speech_recognition` 和`import pyaudio`若沒有報錯就代表下載成功
 
-3.下載opencv套件</br>
+### 3.下載opencv套件</br>
   參考此連結[Opencv](https://www.pyimagesearch.com/2017/09/04/raspbian-stretch-install-opencv-3-python-on-your-raspberry-pi/)
   在python中`import cv2`沒報錯的話就下載成功了
   
-4.申請linenotify api</br>
+### 4.申請linenotify api</br>
   [Line Notify ](https://notify-bot.line.me/zh_TW/) 申請連結</br>
   申請完後務必記下token值，嘗試執行以下程式碼
   ```
@@ -100,3 +100,4 @@
   ```
   若有成功收到Line訊息即可
 # Start Programming
+
