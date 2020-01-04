@@ -191,7 +191,7 @@
       
       * step3. run on the internet
         記得要執行時要回到webstream的資料夾</br>
-        `python3 app.py` 然後在本機貼上 http://你的ip address:5000/
+        `python3 app.py` 然後在本機貼上 `http://你的ip address:5000/`</br>
         hint:raspberry pi terminal 輸入`ifconfig`可以查詢ip位置<br>
         這樣就可以成功在網路上看到即時影像了
        
