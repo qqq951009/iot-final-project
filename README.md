@@ -82,7 +82,7 @@
 ### 4.申請linenotify api</br>
   [Line Notify ](https://notify-bot.line.me/zh_TW/) 申請連結</br>
   申請完後務必記下token值，嘗試執行以下程式碼
-  ```
+  ```python
   import requests
 
   def lineNotify(token, msg):
@@ -100,4 +100,102 @@
   ```
   若有成功收到Line訊息即可
 # Start Programming
+### 1.webstreamomg 網路串流設置</br>
+  * step1. Testing Camera</br>
+    首先先在terminal執行 `raspistill -o cam.jpg` </br>
+    若有拍照成功就沒問題了
+  * step2. Setup/Testing Face Detection
+    首先創建一個資料夾和camera.py
+    ```
+    mkdir webstream && cd webstream
+    nano camera.py
+    ```
+    接這執行以下代碼
+    ```python
+    import cv2
+    class VideoCamera(object):
+        def __init__(self):
+            self.faceCascade = cv2.CascadeClassifier('/home/pi/webstream/haarcascade_frontalface_default.xml')
+            self.cap = cv2.VideoCapture(0)
+
+        def __del__(self):
+            self.cap.release()
+
+        def get_frame(self):
+            ret, img = self.cap.read()    #ret 為回報值，img是一個一個frame
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            faces = self.faceCascade.detectMultiScale(
+                gray,
+                scaleFactor=1.2,
+                minNeighbors=5,
+                minSize=(20, 20)
+            )
+            for (x,y,w,h) in faces:       
+                cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2) #當偵測到人臉時會用藍線框起來
+                roi_gray = gray[y:y+h, x:x+w]
+                roi_color = img[y:y+h, x:x+w]
+                cv2.imwrite('/home/pi/webstream/1.jpg',img)    #cv2.imwrite會將那張frame儲存到所設路徑的位置
+            ret, jpeg = cv2.imencode('.jpg',img)               #將frame轉格式成jpeg
+
+            return jpeg.tostring()                             #將jpeg訊號轉成string，回傳到app.py時會將其解碼成原本格式
+    ```
+    hint:xml檔記得要對應到所在路徑，不然會讀不到
+    
+    ### 2.flask網頁及server建置</br>
+     * step1. 新增app.py<br>
+       首先去到webstream的資料夾
+       `nano app.py`</br>
+       
+       nano新增一個py檔，貼上以下內容
+       ```python
+       from flask import Flask, render_template, Response
+       from camera import VideoCamera                   #import camera.py 使在app.py裡建立camera物件
+       import time
+       app = Flask(__name__)
+
+       @app.route('/')                                  #app.route括號中放的代表所指向的網址
+       def index():
+           """Video streaming home page."""
+           return render_template('index.html')         #render_template代表網址會對應載入的網頁內容
+                                                        #在這邊是對應到index.html
+
+       def gen(camera):
+           """Video streaming generator function."""
+           while True:
+               frame = camera.get_frame()
+               yield (b'--frame\r\n'
+                      b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+
+       @app.route('/video_feed')
+       def video_feed():
+           """Video streaming route. Put this in the src attribute of an img tag."""
+           return Response(gen(VideoCamera()),
+                           mimetype='multipart/x-mixed-replace; boundary=frame')
+       if __name__ == '__main__':
+       app.run(host='0.0.0.0', debug=True, threaded=True)
+       ```
+      * step2. 創建index.html頁面
+        我們在webstream中新增一個叫templates的新資料夾來放html檔<br>
+        然後在裡面`nano index.html`新增一個html檔並貼上以下內容</br>
+        ```html
+        <html>
+             <head>
+                 <title>OpenCV webstream</title>
+             </head>
+             <img src="{{ url_for('video_feed') }}">  
+         </html>
+        ```
+        在flask中html檔的變數都用兩對大括號夾起來{{}}</br>
+        而urlfor()中的video_feed代表app.py中所對應到app.route的網址</br>
+      
+      * step3. run on the internet
+        記得要執行時要回到webstream的資料夾</br>
+        `python3 app.py` 然後在本機貼上 http://你的ip address:5000/
+        hint:raspberry pi terminal 輸入`ifconfig`可以查詢ip位置<br>
+        這樣就可以成功在網路上看到即時影像了
+       
+        
+       
+    
 
