@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <title>OpenCV摄像头视频流显示</title>
+    </head>
+    <img src="{{ url_for('video_feed') }}">
+    <div>
+     
+    <form action="/turnleft">
+        <input type="submit">turnleft</input> 
+    </form> 
+    <form action="/center">
+        <input type="submit">turncenter</input> 
+    </form>
+    <form action="/turnright">
+        <input type="submit">turnright</input> 
+    </form>
+    <form action="/shutdown">
+        <input type="submit">shutdown</input>
+    </form>
+    </div>
+</html>
