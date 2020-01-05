@@ -511,14 +511,13 @@
                 print("No response from Google Speech Recognition service: (0)".format(e))
         ```
        
-        在裡面有4個function，lineNotify(),lineNotify_pic(),loop1(),loop2()</br>
-        基本上lineNotify(),lineNotify_pic()是一樣的，差在lineNotify_pic()可以發送圖片，</br>
+        在裡面有4個function，`lineNotify()`,`lineNotify_pic()`,`loop1()`,`loop2()`</br>
+        基本上`lineNotify()`,`lineNotify_pic()`是一樣的，差在`lineNotify_pic()`可以發送圖片，</br>
         記得要在token內輸入自己的token number就好。</br>
-        比較重要的是loop1 跟loop2，當if result == "open"時會用threading讓loop2執行時的同時loop1也可以一起執行</br>
-        一進到loop1時會先判斷close是否為1，若為1就會開始用for迴圈跑data，模擬GPS偵測的狀態，若經緯度不變沒事，一旦</br>
-        經緯度改變時就會傳送LineNotify訊息，裡面包括1.車子所在經緯度，2.網站連結(上面寫的flask網站)，3.打開網頁後透過
-        webstreaming偵測到人臉所拍下的照片，給使用者，而在進行Loop1的同時，loop2會持續偵測有沒有人講話，若使用者回來並</br>
-        且對麥克風說close的話，loop2會將變數close設為0，並跳出Loop2，此時跑到loop1時會先判斷到close變數變0，Loop1也會</br>
-        跟著跳出，關閉GPS的偵測，並恢復偵測有沒有人講open的狀態。
+        比較重要的是`loop1`跟`loop2`，當`if result == "open"`時會用`threading`讓`loop2`執行時的同時loop1也可以一起執行一進到`loop1`
+        時會先判斷`close`是否為1，若為1就會開始用for迴圈跑data，模擬GPS偵測的狀態，若經緯度不變沒事，一旦經緯度改變時就會傳送LineNotify
+        訊息，裡面包括1.車子所在經緯度，2.網站連結(上面寫的flask網站)，3.打開網頁後透過webstreaming偵測到人臉所拍下的照片，給使用者，而
+        在進行`loop1`的同時，`loop2`會持續偵測有沒有人講話，若使用者回來並且對麥克風說`close`的話，`loop2`會將變數`close`設為0，並跳出
+        `loop2`，此時跑到loop1時會先判斷到`close`變數變0，`loop1`也會跟著跳出，關閉GPS的偵測，並恢復偵測有沒有人講open的狀態。
         
 
