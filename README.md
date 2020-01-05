@@ -328,9 +328,10 @@
          `python3 voicetest.py` 執行後應能成功偵測到你說的話並`print`出來
          
       * step2.聲音模擬控制GPS並發送Line訊息</br>
-        ####前情提要:因為進度壓力還有我的樹莓派一直無法登入，所以還是來不及實作GPS模組QQ</br>
-                    因此我把經緯度塞在json裡面，用for迴圈一個一個讀，來模擬GPS模組，如果</br>
-                    如果有人成功實作GPS只要把裡面的程式碼小改一下就能夠跑了。
+        #### 前情提要:
+          因為進度壓力還有我的樹莓派一直無法登入，所以還是來不及實作GPS模組QQ</br>
+          因此我把經緯度塞在json裡面，用for迴圈一個一個讀，來模擬GPS模組，如果</br>
+          如果有人成功實作GPS只要把裡面的程式碼小改一下就可以了。
         
         ```python
         import requests
@@ -514,14 +515,33 @@
         在裡面有4個function，`lineNotify()`,`lineNotify_pic()`,`loop1()`,`loop2()`</br>
         基本上`lineNotify()`,`lineNotify_pic()`是一樣的，差在`lineNotify_pic()`可以發送圖片，</br>
         記得要在token內輸入自己的token number就好。</br>
-        比較重要的是`loop1`跟`loop2`，當`if result == "open"`時會用`threading`讓`loop2`執行時的同時loop1也可以一起執行一進到`loop1`
         
+        比較重要的是`loop1`跟`loop2`，當`if result == "open"`時會用`threading`讓`loop2`執行時的同時loop1也可以一起執行一進到`loop1` 
         時會先判斷`close`是否為1，若為1就會開始用for迴圈跑data，模擬GPS偵測的狀態，若經緯度不變沒事，一旦經緯度改變時就會傳送LineNotify
-        
         訊息，裡面包括1.車子所在經緯度，2.網站連結(上面寫的flask網站)，3.打開網頁後透過webstreaming偵測到人臉所拍下的照片，給使用者，而
-        
         在進行`loop1`的同時，`loop2`會持續偵測有沒有人講話，若使用者回來並且對麥克風說`close`的話，`loop2`會將變數`close`設為0，並跳出
-        
         `loop2`，此時跑到loop1時會先判斷到`close`變數變0，`loop1`也會跟著跳出，關閉GPS的偵測，並恢復偵測有沒有人講open的狀態。</br>
+       * 最後附上GPS抓經緯度的程式碼的，如果GPS模組能跑的話把它丟進`loop1`小改一下就會成功了
+        
+        ```python
+        from sys import argv
+        import gps
+        import requests
+
+        #Listen on port 2947 of gpsd
+        session = gps.gps("localhost", "2947")
+        session.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
+
+        while True :
+                rep = session.next()
+                try :
+                    if (rep["class"] == "TPV") :
+                       print(str(rep.lat) + "," + str(rep.lon))
+
+                except Exception as e :
+                    print("Got exception " + str(e))
+                ```
+        
+        
         
 
