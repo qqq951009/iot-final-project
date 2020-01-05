@@ -143,6 +143,7 @@ y = data[1]['long']
 token = 'your token'
 times = 0
 flag = 1
+token = "your_token"
 #obtain audio from the microphone
 r=sr.Recognizer()
 while times < 3:
