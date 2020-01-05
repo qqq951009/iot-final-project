@@ -295,10 +295,230 @@
                </div>
            </html>
         ```
+        `python3 app.py`
         在網頁中我們寫了三個按鈕 `type="submit"`，當他按下去時會執行外面form的action</br>
-        第一個 `action="/turnup"` 會讓他按下button時導至 `app.py` 中`/turnup`的網址<br>並且執行它裡面的</br>
-        `def turn_up()`，這樣sero motor就可以透過網頁操控來轉動了~~~
+        第一個 `action="/turnup"` 會讓他按下button時導至 `app.py` 中`/turnup`的網址<br>
+        並且執行它裡面的 `def turn_up()`，這樣sero motor就可以透過網頁操控來轉動了~~~
         
+    ### 4.聲音控制</br>
+      * step1.測試 voice_recognition</br>
+        執行以下程式碼
+        ```python
+        import speech_recognition as sr
+
+        #obtain audio from the microphone
+        r=sr.Recognizer()
+        with sr.Microphone() as source:
+            print("Please wait. Calibrating microphone...")
+            #listen for 5 seconds and create the ambient noise energy level
+            r.adjust_for_ambient_noise(source, duration=5)
+            print("Say something!")
+            audio=r.listen(source)
+
+        # recognize speech using Google Speech Recognition
+        try:
+            print("Google Speech Recognition thinks you said:")
+            print(r.recognize_google(audio, language="zh-TW"))
+        except sr.UnknownValueError:
+            print("Google Speech Recognition could not understand audio")
+        except sr.RequestError as e:
+            print("No response from Google Speech Recognition service: {0}".format(e))
+         ```
+         
+         `python3 voicetest.py` 執行後應能成功偵測到你說的話並`print`出來
+         
+      * step2.聲音模擬控制GPS並發送Line訊息</br>
+        ####前情提要:因為進度壓力還有我的樹莓派一直無法登入，所以還是來不及實作GPS模組QQ</br>
+                    因此我把經緯度塞在json裡面，用for迴圈一個一個讀，來模擬GPS模組，如果</br>
+                    如果有人成功實作GPS只要把裡面的程式碼小改一下就能夠跑了。
+        
+        ```python
+        import requests
+        import time
+        import speech_recognition as sr
+        import threading
+
+        def lineNotify_pic(token, msg, picurl):
+
+            url = "https://notify-api.line.me/api/notify"
+            headers = {
+                "Authorization": "Bearer " + token, 
+                #"Content-Type" : "application/x-www-form-urlencoded"
+            }
+
+            payload = {'message': msg}
+            files = {'imageFile': open(picurl, 'rb')}
+            r = requests.post(url, headers = headers, params = payload, files = files)
+            return r.status_code 
+
+        def lineNotify(token, msg):
+
+            url = "https://notify-api.line.me/api/notify"
+            headers = {
+                "Authorization": "Bearer " + token, 
+                #"Content-Type" : "application/x-www-form-urlencoded"
+            }
+
+            payload = {'message': msg}
+            #files = {'imageFile': open(picurl, 'rb')}
+            r = requests.post(url, headers = headers, params = payload)
+            return r.status_code
+
+
+
+        def loop1():
+            for i in data:
+                if close == 1: 
+                    print('gps偵測中')
+                    lineNotify(token,'gps偵測中') 
+                    latitude = i['lat'] 
+                    longetude = i['long'] 
+                    if(x != latitude or y != longetude):
+                        lineNotify(token,'your car wsa stolen') 
+                        print('latitude:'+latitude+',1ongetude:'+longetude) 
+                        message1 = 'http://maps.google.com/?q='+latitude+','+longetude
+                        message2 = 'ip address'
+                        lineNotify(token,message1)
+                        lineNotify(token,message2)
+                        lineNotify_pic(token,'犯人',picurl)
+                    else:
+                        lineNotify(token,'bicycle save') 
+
+                else:
+                    lineNotify(token,'gps close')
+                    break
+                time.sleep(8)
+            time.sleep(1)
+
+        def loop2():
+            global close
+            close = 1
+            #obtain audio from the microphone
+            r=sr.Recognizer()
+            while True:
+                with sr.Microphone() as source:
+
+                    print("Please wait. Calibrating microphone...") 
+                    #listen for 5 seconds and create the ambient noise energy level 
+                    r.adjust_for_ambient_noise(source, duration=5) 
+                    lineNotify(token,'you can say close to off the gps now ') 
+                    print("Say something!") 
+                    audio=r.listen(source) 
+
+                try: 
+                    print("Google Speech Recognition thinks you said:") 
+                    result = r.recognize_google(audio, language="en-US") 
+                    print(result) 
+                    if result == 'close':
+                        close = 0
+
+                        print(close)
+                        lineNotify(token,'loop2 close')
+                        break
+                    else:
+                        lineNotify(token,'sorry try again')
+
+                except sr.UnknownValueError:
+                    #lineNotify(token,'can not understand audio please speak again') 
+                    print("Google Speech Recognition could not understand audio") 
+                except sr.RequestError as e: 
+                    print("No response from Google Speech Recognition service: (0)".format(e))
+                time.sleep(2)
+        token = "your_token"
+        result = " "
+        picurl="your_path"
+        data = [
+            {
+                'lat':'24.967994',
+                'long':'121.192498'
+            },
+            {
+                'lat':'24.967994',
+                'long':'121.192498'
+            },
+            {
+                'lat':'24.967994',
+                'long':'121.192498'
+            },
+            {
+                'lat':'24.967994',
+                'long':'121.192498'
+            },
+            {
+                'lat':'24.967994',
+                'long':'121.192498'
+            },
+            {
+                'lat':'24.967994',
+                'long':'121.192498'
+            },
+            {
+                'lat':'24.968461',
+                'long':'121.191029'
+            },
+            {
+                'lat':'24.968461',
+                'long':'121.191029'
+            },
+            {
+                'lat':'24.968461',
+                'long':'121.191029'
+            },
+            {
+                'lat':'24.968461',
+                'long':'121.191029'
+            }
+        ]
+
+        x = data[1]['lat']
+        y = data[1]['long']
+        token = 'your token'
+        times = 0
+        flag = 1
+        #obtain audio from the microphone
+        r=sr.Recognizer()
+        while times < 3:
+            with sr.Microphone() as source:
+                print('first in')
+                print("Please wait. Calibrating microphone...") 
+                #listen for 5 seconds and create the ambient noise energy level 
+                r.adjust_for_ambient_noise(source, duration=5) 
+                lineNotify(token,'speak') 
+                print("Say something!") 
+                audio=r.listen(source) 
+
+            try: 
+                print("Google Speech Recognition thinks you said:") 
+                result = r.recognize_google(audio, language="en-US") 
+                print(result) 
+                if result == 'open':
+                    lineNotify(token,'gps on')
+                    flag = 1
+                    thread2 = threading.Thread(target=loop2)
+                    thread2.start()
+                    loop1()
+
+
+                else:
+                    times += 1
+                    lineNotify(token,'wrong password'+str(result)+'try again')
+                    print('failed')
+
+            except sr.UnknownValueError:
+                lineNotify(token,'can not understand audio please speak again') 
+                print("Google Speech Recognition could not understand audio") 
+            except sr.RequestError as e: 
+                print("No response from Google Speech Recognition service: (0)".format(e))
+        ```
        
-    
+        在裡面有4個function，lineNotify(),lineNotify_pic(),loop1(),loop2()</br>
+        基本上lineNotify(),lineNotify_pic()是一樣的，差在lineNotify_pic()可以發送圖片，</br>
+        記得要在token內輸入自己的token number就好。</br>
+        比較重要的是loop1 跟loop2，當if result == "open"時會用threading讓loop2執行時的同時loop1也可以一起執行</br>
+        一進到loop1時會先判斷close是否為1，若為1就會開始用for迴圈跑data，模擬GPS偵測的狀態，若經緯度不變沒事，一旦</br>
+        經緯度改變時就會傳送LineNotify訊息，裡面包括1.車子所在經緯度，2.網站連結(上面寫的flask網站)，3.打開網頁後透過
+        webstreaming偵測到人臉所拍下的照片，給使用者，而在進行Loop1的同時，loop2會持續偵測有沒有人講話，若使用者回來並</br>
+        且對麥克風說close的話，loop2會將變數close設為0，並跳出Loop2，此時跑到loop1時會先判斷到close變數變0，Loop1也會</br>
+        跟著跳出，關閉GPS的偵測，並恢復偵測有沒有人講open的狀態。
+        
 
