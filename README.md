@@ -515,9 +515,13 @@
         基本上`lineNotify()`,`lineNotify_pic()`是一樣的，差在`lineNotify_pic()`可以發送圖片，</br>
         記得要在token內輸入自己的token number就好。</br>
         比較重要的是`loop1`跟`loop2`，當`if result == "open"`時會用`threading`讓`loop2`執行時的同時loop1也可以一起執行一進到`loop1`
+        
         時會先判斷`close`是否為1，若為1就會開始用for迴圈跑data，模擬GPS偵測的狀態，若經緯度不變沒事，一旦經緯度改變時就會傳送LineNotify
+        
         訊息，裡面包括1.車子所在經緯度，2.網站連結(上面寫的flask網站)，3.打開網頁後透過webstreaming偵測到人臉所拍下的照片，給使用者，而
+        
         在進行`loop1`的同時，`loop2`會持續偵測有沒有人講話，若使用者回來並且對麥克風說`close`的話，`loop2`會將變數`close`設為0，並跳出
-        `loop2`，此時跑到loop1時會先判斷到`close`變數變0，`loop1`也會跟著跳出，關閉GPS的偵測，並恢復偵測有沒有人講open的狀態。
+        
+        `loop2`，此時跑到loop1時會先判斷到`close`變數變0，`loop1`也會跟著跳出，關閉GPS的偵測，並恢復偵測有沒有人講open的狀態。</br>
         
 
