@@ -195,6 +195,109 @@
         hint:raspberry pi terminal 輸入`ifconfig`可以查詢ip位置<br>
         這樣就可以成功在網路上看到即時影像了
        
+    ### 3.servo mortor pwm setup and put it on flask</br>
+      * step1.測試servo mortor可否運行</br>
+        先確認GPIO對應腳位沒有差錯後，貼上以下代碼
+        ```python
+        import RPi.GPIO as GPIO
+        import time
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.setup(11,GPIO.OUT)
+        pwm=GPIO.PWM(11,50)
+        pwm.start(0)
+        duty = 135/18+2
+        GPIO.output(11,True)
+        pwm.ChangeDutyCycle(duty) 
+        time.sleep(1) 
+        GPIO.output(11, False) 
+        pwm.ChangeDutyCycle(0) 
+        pwm.stop() 
+        GPIO.cleanup() 
+        ```
+        
+        執行`python3 pwm_test.py`可以動後代表沒問題
+      * step2.put it on flask</br>
+        在app.py中`@app.route('/video_feed')`的節點後貼上下面程式碼
+        ```python
+        @app.route('/turnup')
+        def turn_up():
+            GPIO.setmode(GPIO.BOARD)
+            GPIO.setup(11,GPIO.OUT)
+            pwm=GPIO.PWM(11,50)
+            pwm.start(0)
+            duty = 135/18+2
+            GPIO.output(11,True)
+            pwm.ChangeDutyCycle(duty) 
+            time.sleep(1) 
+            GPIO.output(11, False) 
+            pwm.ChangeDutyCycle(0) 
+            pwm.stop() 
+            GPIO.cleanup() 
+            print('left') 
+            return render_template('index.html')
+
+
+        @app.route('/center')
+        def turn_center():
+            GPIO.setmode(GPIO.BOARD)
+            GPIO.setup(11,GPIO.OUT)
+            pwm=GPIO.PWM(11,50)
+            pwm.start(0)
+            duty = 90/18+2
+            GPIO.output(11,True)
+            pwm.ChangeDutyCycle(duty) 
+            time.sleep(1) 
+            GPIO.output(11, False) 
+            pwm.ChangeDutyCycle(0) 
+            pwm.stop() 
+            GPIO.cleanup() 
+            print('center') 
+            return render_template('index.html')
+
+        @app.route('/turndown')
+        def turn_down():
+            GPIO.setmode(GPIO.BOARD)
+            GPIO.setup(11,GPIO.OUT)
+            pwm=GPIO.PWM(11,50)
+            pwm.start(0)
+            duty = 45/18+2
+            GPIO.output(11,True)
+            pwm.ChangeDutyCycle(duty) 
+            time.sleep(1) 
+            GPIO.output(11, False) 
+            pwm.ChangeDutyCycle(0) 
+            pwm.stop() 
+            GPIO.cleanup() 
+            print('right') 
+            return render_template('index.html')
+        ```
+        因為我們要有往上、中間、往下三個方向，所以我們要有三個app.route導向三個網址</br>
+        而三個網址所連結到的是`index.html`，所以在render_template()裡都要輸入index.html</br>
+        而在`index.html`裡我們要改成
+        
+        ```html
+          <html>
+               <head>
+                   <title>OpenCV webstream</title>
+               </head>
+               <img src="{{ url_for('video_feed') }}">
+               <div>
+
+               <form action="/turnup">
+                   <input type="submit">turnleft</input> 
+               </form> 
+               <form action="/center">
+                   <input type="submit">turncenter</input> 
+               </form>
+               <form action="/turndown">
+                   <input type="submit">turnright</input> 
+               </form>
+               </div>
+           </html>
+        ```
+        在網頁中我們寫了三個按鈕 `type="submit"`，當他按下去時會執行外面form的action</br>
+        第一個 `action="/turnup"` 會讓他按下button時導至 `app.py` 中`/turnup`的網址<br>並且執行它裡面的</br>
+        `def turn_up()`，這樣sero motor就可以透過網頁操控來轉動了~~~
         
        
     
